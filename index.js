@@ -19,10 +19,10 @@ app.use(bodyParser.json());
 
 app.use('/',require('./router.js'));
 
-app.listen(process.env.PORT, function(err){
+app.listen(10000, function(err){
     if(err){
         console.log(err)
     }else{
-        console.log(`Server is running on port: ${PORT}`)
+        console.log(`Server is running on port`)
     }
 })
