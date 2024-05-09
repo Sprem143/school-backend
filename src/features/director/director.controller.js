@@ -95,7 +95,7 @@ exports.signup = async (req, res) => {
 exports.signin = async (req, res) => {
     const { email, password } = req.body;
     try {
-
+     console.log("director sign in controller")
         let director = await Director.findOne({ email });
         if (director) {
             if (password == director.password) {
