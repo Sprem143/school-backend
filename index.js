@@ -1,7 +1,13 @@
 const express= require('express')
 const app = express();
 const cors = require('cors');
-app.use(cors());
+app.use(cors(
+    {
+        origin:["https://mycoaching.vercel.app"],
+        methods:["POST","PUT","DELETE","GET"],
+        credentials:true
+    }
+));
 const bodyParser = require('body-parser');
 const mongoose= require('mongoose');
 require('dotenv').config();
