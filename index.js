@@ -13,8 +13,12 @@ const mongoose= require('mongoose');
 require('dotenv').config();
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
-const connectDb = require('./config/mongoose')
-connectDb();
+
+// mongodb atlas cannection-----------------
+const DB= "mongodb+srv://prem:Prem7366@cluster0.hmjxes4.mongodb.net/mernProject?retryWrites=true&w=majority&appName=Cluster0"
+mongoose.connect(DB).then(()=>{
+    console.log("databse connected")
+}).catch((err)=>console.log(err))
 
 // app.use(express.json());
 app.use(bodyParser.json());
