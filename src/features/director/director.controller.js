@@ -3,21 +3,11 @@ const Student = require('../student/student.model');
 const Teacher = require('../teacher/teacher.model');
 const Attendence = require('../student/studentAttendence.model')
 const jwt = require('jsonwebtoken');
+const SECRET_KEY='school';
 
 require('dotenv').config();
 
-exports.verifytoken = async (req, res) => {
-    let token = req.body.token;
-    let result = verifyToken(token);
-    res.status(200).send(result);
-}
-
-exports.generateToken=(payload) =>{
-    return jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' }); // Token expires in 1 hour
-}
-
-// Function to verify JWT
-exports.verifyToken=(token)=> {
+const verifyToken = async (token) => {
     try {
         console.log(token)
         const decoded = jwt.verify(token, SECRET_KEY);
@@ -28,7 +18,25 @@ exports.verifyToken=(token)=> {
         return false 
     };
 }
+
+exports.generateToken=(payload) =>{
+    return jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' }); // Token expires in 1 hour
+}
+
+const generateToken=(payload) =>{
+    return jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' }); // Token expires in 1 hour
+}
+
+// Function to verify JWT
+exports.verifytoken=(req,res)=> {
+    exports.verifytoken = async (req, res) => {
+        let token = req.body.token;
+        let result = verifyToken(token);
+        res.status(200).send(result);
+    }
+}
 // ---------set attendance-------------
+
 exports.setattendance = async (req, res) => {
     try {
         const { email, yearmonth, date } = req.body;
@@ -115,9 +123,7 @@ exports.signin = async (req, res) => {
         if (!director) {
             return res.status(404).json({ message: 'Director not found' });
         }
-
-        const isPasswordValid = await director.isValidPassword(password);
-        if (!isPasswordValid) {
+        if (director.password!=password) {
             return res.status(401).json({ message: 'Incorrect password' });
         }
 
