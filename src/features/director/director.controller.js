@@ -3,8 +3,7 @@ const Student = require('../student/student.model');
 const Teacher = require('../teacher/teacher.model');
 const Attendence = require('../student/studentAttendence.model')
 const jwt = require('jsonwebtoken');
-const { generateToken } = require('../auth.jsx');
-const { verifyToken } = require('../auth.jsx');
+
 require('dotenv').config();
 
 exports.verifytoken = async (req, res) => {
@@ -13,6 +12,22 @@ exports.verifytoken = async (req, res) => {
     res.status(200).send(result);
 }
 
+exports.generateToken=(payload) =>{
+    return jwt.sign(payload, SECRET_KEY, { expiresIn: '1h' }); // Token expires in 1 hour
+}
+
+// Function to verify JWT
+exports.verifyToken=(token)=> {
+    try {
+        console.log(token)
+        const decoded = jwt.verify(token, SECRET_KEY);
+        if(decoded){
+            return true;
+        }
+    } catch (error) {
+        return false 
+    };
+}
 // ---------set attendance-------------
 exports.setattendance = async (req, res) => {
     try {
@@ -92,27 +107,31 @@ exports.signup = async (req, res) => {
 }
 
 // --------director sign in --------
+
 exports.signin = async (req, res) => {
     const { email, password } = req.body;
     try {
-     console.log("director sign in controller")
-        let director = await Director.findOne({ email });
-        if (director) {
-            if (password == director.password) {
-                const token = generateToken({ director })
-                console.log(token);
-
-                res.status(200).json({ token: token });
-            } else {
-                res.status(404).json({ message: 'Incorrect password' });
-            }
-        } else {
-            res.status(404).json({ message: 'Director not found' });
+        const director = await Director.findOne({ email });
+        if (!director) {
+            return res.status(404).json({ message: 'Director not found' });
         }
+
+        const isPasswordValid = await director.isValidPassword(password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: 'Incorrect password' });
+        }
+
+        const token = generateToken({ id: director._id });
+        res.status(200).json({ token });
     } catch (err) {
+        console.error('Error during signin:', err);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 }
+
+
+
+
 // ---------add a student ----------
 exports.addstudent = async (req, res) => {
     try {
