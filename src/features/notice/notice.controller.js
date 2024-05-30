@@ -3,6 +3,7 @@ const Notice = require('./notice.model');
 exports.getnotice=async(req,res)=>{
     try{
         let result= await Notice.find();
+        result= result.reverse();
         res.status(200).json(result);
     }catch(err){
       res.status(201).json({message:"Error while fetching notice"})

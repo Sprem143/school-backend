@@ -42,20 +42,41 @@ exports.setattendance = async (req, res) => {
         const { email, yearmonth, date } = req.body;
         let student = await Student.findOne({ email });
         let arr = student.attendance;
-        // if year and month exist--------------
-        for (let i = 0; i < arr.length; i++) {
-            console.log(i);
-            if (arr[i][0] == yearmonth) {
-                arr[i][1].push(date);
-                // ------update value-------
-                let filter = { email: email };
-                let update = { attendance: arr }
-                var re = await Student.findOneAndUpdate(filter, update);
-                console.log(re);
-            }
-            if (i == arr.length - 1 && !re) {
 
-                console.log("second block run")
+        var status="";
+        var re=false;
+
+        if(arr.length==1){
+            // -----first time attendance----------
+            let attendance = [yearmonth, [date]]
+                await Student.findOneAndUpdate(
+                    { "email": email },
+                    {
+                        $push: { attendance: attendance },
+                    },
+                    { returnNewDocument: true }
+                )
+                status="First attendance inserted"
+        }else{
+        // if year and month exist--------------
+        
+        for (let i = 1; i < arr.length; i++) {
+            console.log(i)
+            if(arr[i][0].toUpperCase()===yearmonth.toUpperCase()) {
+                if(arr[i][1].includes(date)){
+                    status="Attendance already submitted"
+                    break;
+                }else{
+                    arr[i][1].push(date);
+                    let filter = { email: email };
+                    let update = { attendance: arr }
+                    re = await Student.findOneAndUpdate(filter, update);
+                    status="Attendence submitted";
+                    break;
+                }
+            }
+            else if(i == arr.length - 1 && re==false) {
+               
                 let attendance = [yearmonth, [date]]
                 await Student.findOneAndUpdate(
                     { "email": email },
@@ -64,12 +85,11 @@ exports.setattendance = async (req, res) => {
                     },
                     { returnNewDocument: true }
                 )
+                status="new month created"
             }
-
-        }
-        res.send("successful")
+        }}
+        res.json({message:status})
     } catch (err) {
-        console.log(err);
         res.status(201).json({ message: "Internal Error" })
     }
 }
@@ -96,11 +116,12 @@ exports.attendence = async (req, res) => {
         if (result) {
             console.log(result)
             res.status(200).json({ message: `Attendence saved successfully for date ${dateNow}` })
+        }else{
+            res.status(201).json({message:"Error while saving attendance"})
         }
     } catch (err) {
-        res.status(201).json({ message: err });
         console.log(err)
-
+        res.status(201).json({ message:"Internal error" });
     }
 }
 
